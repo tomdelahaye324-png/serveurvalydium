@@ -6,22 +6,28 @@ on:
     branches: [ main, master ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Download source
         uses: actions/checkout@v4
+
       - name: Install Node for build only
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Install dependencies
         run: npm install
+
       - name: Build Windows installer
         run: npm run dist
+
       - name: Upload installer EXE
         uses: actions/upload-artifact@v4
         with:
