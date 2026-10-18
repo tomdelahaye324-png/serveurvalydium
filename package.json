@@ -16,15 +16,18 @@
   "build": {
     "appId": "fr.valydium.launcher",
     "productName": "VALYDIUM Launcher",
-    "directories": { "output": "dist" },
+    "directories": {
+      "output": "dist"
+    },
     "files": ["main.js", "index.html", "preload.js", "package.json"],
-    "win": { "target": "nsis" },
+    "win": {
+      "target": "nsis"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    },
-    "publish": "never"
+    }
   }
 }
