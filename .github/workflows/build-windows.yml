@@ -3,35 +3,37 @@ name: Build VALYDIUM Launcher for Windows
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
     runs-on: windows-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
     steps:
-      - name: Download source
-        uses: actions/checkout@v4
-
-      - name: Install Node for build only
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Install dependencies
+      - name: Trouver package.json
+        id: find
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem -Recurse -Filter package.json | Where-Object { $_.FullName -notmatch 'node_modules' } | Select-Object -First 1
+          if (-not $pkg) { Write-Error "package.json introuvable"; exit 1 }
+          $d = $pkg.DirectoryName -replace '\\','/'
+          "dir=$d" >> $env:GITHUB_OUTPUT
+          Get-ChildItem $pkg.DirectoryName
+      - name: Installer les dependances
+        working-directory: ${{ steps.find.outputs.dir }}
         run: npm install
-
-      - name: Build Windows installer
-        run: npm run dist
-
-      - name: Upload installer EXE
-        uses: actions/upload-artifact@v4
+      - name: Construire l installateur
+        working-directory: ${{ steps.find.outputs.dir }}
+        run: npx electron-builder --win nsis --publish never
+      - uses: actions/upload-artifact@v4
         with:
           name: VALYDIUM-Launcher-Windows-Installer
-          path: dist/*.exe
+          path: ${{ steps.find.outputs.dir }}/dist/*.exe
           if-no-files-found: error
-          retention-days: 14
